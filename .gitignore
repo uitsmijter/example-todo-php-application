@@ -1,3 +1,15 @@
+# Generic cache files
+*~
+.~*
+*.tmp
+*.temp
+*.DS_Store
+.*.swp
+*.out
+*.cache
+Thumbs.db
+
+# Project files
 /node_modules
 /public/build
 /public/hot
