@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: migration-example-php
+  labels:
+    littleletter.de/cert-sync: "true"

@@ -1,0 +1,43 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  KUBE_CONTEXT: "uitsmijter/shared-agent:pawpatrol"
+  IMAGE_TAGGED: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}
+
+.use_context: &use_context
+  - kubectl config get-contexts
+  - kubectl config use-context "${KUBE_CONTEXT}"
+
+build:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [ '' ]
+  before_script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}"
+      > /kaniko/.docker/config.json
+  script:
+    - /kaniko/executor
+      --destination "${IMAGE_TAGGED}"
+      --dockerfile ./deployment/Dockerfile
+      --context .
+
+deploy:
+  stage: deploy
+  image: ausdertechnik/buildbot-margarete@sha256:044274fa5fd50a1a320a87709d45890fea07e8e49e2281ec2684976743eff4a6
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  artifacts:
+    paths:
+      - deployment/
+    when: always
+  before_script:
+    - *use_context
+    - pushd deployment/base && kustomize edit set image "${CI_REGISTRY_IMAGE}=${IMAGE_TAGGED}" && popd
+  script:
+    - kubectl diff -k deployment/pawpatrol || true
+    - kubectl apply -k deployment/pawpatrol
+    - kubectl -n migration-example-php apply -f "${PAWPATROL_PULLSECRET}"
