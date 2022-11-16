@@ -81,6 +81,12 @@ spec:
           envFrom:
             - secretRef:
                 name: env
+          env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_SECRET
           ports:
             - containerPort: 80
           livenessProbe:
@@ -90,7 +96,7 @@ spec:
             successThreshold: 1
             failureThreshold: 5
             httpGet:
-              path: /
+              path: /health
               port: 80
           readinessProbe:
             initialDelaySeconds: 10
@@ -99,7 +105,7 @@ spec:
             successThreshold: 1
             failureThreshold: 5
             httpGet:
-              path: /
+              path: /health
               port: 80
           startupProbe:
             failureThreshold: 60

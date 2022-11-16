@@ -1,0 +1,18 @@
+apiVersion: uitsmijter.io/v1
+kind: Client
+metadata:
+  name: php
+spec:
+  # Must match secrets.yaml
+  ident: 0e6b4f91-b4c7-4919-a295-a41ea070d7a6
+  tenantname: migration-example-php/php
+  grant_types:
+    - password
+    - authorization_code
+    - refresh_token
+  redirect_urls:
+    - https://php.littleletter.de/.*
+  referrers:
+    - https://php.littleletter.de/.*
+  scopes:
+    - access

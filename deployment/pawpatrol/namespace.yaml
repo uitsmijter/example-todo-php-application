@@ -5,3 +5,4 @@ metadata:
   name: migration-example-php
   labels:
     littleletter.de/cert-sync: "true"
+    jwt-secret/sync: "true"

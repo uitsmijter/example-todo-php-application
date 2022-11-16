@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 /**
  * @property int $id
@@ -20,9 +21,14 @@ use Laravel\Sanctum\HasApiTokens;
  *
  * @property-read Collection|ToDo[] $todos
  */
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
+
+    /**
+     * @var string
+     */
+    protected $primaryKey = 'email';
 
     /**
      * The attributes that are mass assignable.
@@ -59,6 +65,16 @@ class User extends Authenticatable
      */
     public function todos(): HasMany
     {
-        return $this->hasMany(Todo::class);
+        return $this->hasMany(Todo::class, 'user_id', 'id');
+    }
+
+    public function getJWTIdentifier()
+    {
+        return 'email';
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
     }
 }

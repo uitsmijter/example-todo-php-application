@@ -19,6 +19,26 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/health', fn() => 'ok')->withoutMiddleware('jwt.auth');
+
+Route::get('/debug', function () {
+    /** @var \PHPOpenSourceSaver\JWTAuth\JWTAuth $auth */
+    $auth = app('tymon.jwt.auth');
+
+    try {
+        $payload = $auth->getPayload();
+    } catch (\PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException $e) {
+        $payload = $e->getMessage();
+    }
+
+    return [
+        'jwt'     => $payload,
+        'server'  => request()->server(),
+        'headers' => request()->header(),
+        'cookies' => request()->cookie(),
+    ];
+});
+
 Route::get('/dashboard', function () {
     return view('dashboard', ['todos' => Todo::whereDone(false)->get()]);
 })->middleware(['auth', 'verified'])->name('dashboard');

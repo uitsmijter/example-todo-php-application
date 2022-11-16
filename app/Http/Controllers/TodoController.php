@@ -40,6 +40,7 @@ class TodoController extends Controller
         // Retrieve the validated input data...
         $validated = $request->validated();
 
+        /** @var ToDo $todo */
         $todo = Todo::create($validated);
         $todo->user()->associate(auth()->user());
         $todo->save();

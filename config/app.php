@@ -212,4 +212,5 @@ return [
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 
+    'logout_url' => env('UITSMIJTER_LOGOUT'),
 ];
