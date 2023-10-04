@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\TodoController;
+use App\Models\Todo;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,7 +20,14 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return view('dashboard', ['todos' => Todo::whereDone(false)->get()]);
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource(
+        '/api/todo',
+        TodoController::class
+    );
+});
 
 require __DIR__.'/auth.php';
