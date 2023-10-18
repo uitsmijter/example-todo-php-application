@@ -12,24 +12,60 @@ spec:
     enabled: true
   providers:
     # See https://docs.uitsmijter.io/providers/providers/
-    - |
-      class UserLoginProvider {
-        profile = {};
-
-        constructor(credentials) {
+  - |
+    class UserLoginProvider {
+      isLoggedIn = false;
+      profile = {};
+      role = null;
+      constructor(credentials) {
+        if( credentials.username === "admin@example.com" ){
+          this.isLoggedIn = true;
+          this.role = 'superadmin';
           this.profile = {email: credentials.username, name: "UIT User (" + credentials.username + ")"};
-          commit(true);
+          commit(200, this.profile);
+          return;
         }
-
-        get canLogin() {
-          return true;
-        }
-
-        get userProfile() {
-          return this.profile;
-        }
-
-        get role() {
-          return "user";
-        }
+        fetch(`http://checkcredentials.migration-example-php.svc/validate-login`, {
+          method: "post",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ "username": credentials.username, "password": credentials.password })
+        }).then((result) => {
+          var subject = {};
+          try {
+            this.profile = JSON.parse(result.body);
+            if (result.code == 200) {
+              this.isLoggedIn = true;
+              this.role = profile.role;
+              subject = {subject: this.profile.userId};
+            }
+          } catch(err) {
+            console.error("Error: "+ err.message );
+          }
+          commit(result.code, subject);
+        });
       }
+      get canLogin() { return this.isLoggedIn; }
+      get userProfile() { return this.profile; }
+      get role() { return this.role; }
+    }
+  - |
+    class UserValidationProvider {
+      isValid = false;
+      constructor(args) {
+        // admin@example.com is in the database from step one!
+        fetch(`checkcredentials.migration-example-php.svc/validate-user`, {
+          method: "post",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: args.username })
+        }).then((result) => {
+          response = JSON.parse(result.body);
+          if (result.code == 200 && response.isDeleted === false) {
+            this.isValid = true;
+          }
+          commit(this.isValid);
+        });
+      }
+      get isValid() {
+        return this.isValid;
+      }
+    }
